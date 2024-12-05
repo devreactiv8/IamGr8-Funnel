@@ -1,0 +1,220 @@
+<div id="game-container">
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f1f0ee;
+            overflow: hidden;
+        }
+
+        /* Game board container */
+        .game-board {
+            display: grid;
+            grid-gap: 10px;
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 90%;
+            max-height: 90%;
+            width: 500px;
+            height: 500px;
+            background-color: #28261e;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .tile {
+            background-color: #7c7057;
+            border: 2px solid #28261e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #f1f0ee;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .tile.flipped {
+            background-color: #f1f0ee;
+        }
+
+        .tile.matched {
+            background-color: #7c7057;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Report and Email Form */
+        .report-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .email-form {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .email-form input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+
+        .email-form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #28261e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+    </style>
+
+    <div class="game-board" id="game-board"></div>
+
+    <div id="score-container" class="hidden">
+        <h2>Your Memory Score is: <span id="score"></span> / 100</h2>
+        <div id="report-container" class="report-container hidden">
+            <p id="report-teaser"></p>
+            <div class="email-form">
+                <input type="email" id="user-email" placeholder="Enter your email for full report" />
+                <button id="send-report-btn">Get Full Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Memory Game Setup
+        (function() {
+            const gameBoard = document.getElementById('game-board');
+            const scoreContainer = document.getElementById('score-container');
+            const scoreElement = document.getElementById('score');
+            const reportContainer = document.getElementById('report-container');
+            const reportTeaser = document.getElementById('report-teaser');
+            const sendReportBtn = document.getElementById('send-report-btn');
+            const userEmail = document.getElementById('user-email');
+            
+            const animalImages = [
+                "https://files.worldwildlife.org/wwfcmsprod/images/Tiger_resting_Bandhavgarh_National_Park_India/hero_small/6aofsvaglm_Medium_WW226365.jpg", // Tiger
+                "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsX29mZmljZV8yX3Bob3RvX29mX2FfbGlvbl9pc29sYXRlZF9vbl9jb2xvcl9iYWNrZ3JvdW5kXzJhNzgwMjM1LWRlYTgtNDMyOS04OWVjLTY3ZWMwNjcxZDhiMV8xLmpwZw.jpg", // Lion
+                "https://cdn.britannica.com/02/152302-050-1A984FCB/African-savanna-elephant.jpg", // Elephant
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZtlc0dpgyaC-_uvD-EH3mZ1Q5Ai95V3SJcw&s", // Giraffe
+                "https://cdn.britannica.com/77/81277-050-2A6A35B2/Adelie-penguin.jpg", // Penguin
+                "https://t3.ftcdn.net/jpg/00/16/81/88/360_F_16818804_3zqaNN9Bg4Pojl8iiiRiDvP67P6OoYYi.jpg", // Bear
+                "https://s3.us-east-1.amazonaws.com/contents.newzenler.com/45939/library/65a28cd887a30_1705151704_base-logo-transparent-background.png", // Zebra
+                "https://www.wwf.org.uk/sites/default/files/styles/max_650x650/public/2022-05/_WW236934.jpg?itok=JlG-1l9V"  // Koala
+            ];
+
+            let tiles = [...animalImages, ...animalImages];
+            tiles = shuffle(tiles);
+            let flippedTiles = [];
+            let matchedTiles = 0;
+            let startTime = Date.now();
+
+            tiles.forEach((value, index) => {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                tile.dataset.index = index;
+                tile.dataset.value = value;
+                tile.style.backgroundImage = "none"; // Images hidden initially
+                tile.textContent = "";
+                tile.addEventListener('click', flipTile);
+                gameBoard.appendChild(tile);
+            });
+
+            function flipTile(event) {
+                const tile = event.target;
+                if (flippedTiles.length === 2 || tile.classList.contains('flipped') || tile.classList.contains('matched')) {
+                    return;
+                }
+
+                tile.classList.add('flipped');
+                tile.style.backgroundImage = `url(${tile.dataset.value})`;
+                flippedTiles.push(tile);
+
+                if (flippedTiles.length === 2) {
+                    checkMatch();
+                }
+            }
+
+            function checkMatch() {
+                const [tile1, tile2] = flippedTiles;
+                if (tile1.dataset.value === tile2.dataset.value) {
+                    tile1.classList.add('matched');
+                    tile2.classList.add('matched');
+                    matchedTiles += 2;
+                    flippedTiles = [];
+
+                    if (matchedTiles === tiles.length) {
+                        const endTime = Date.now();
+                        const timeTaken = (endTime - startTime) / 1000; // Time in seconds
+                        const score = calculateScore(timeTaken);
+                        displayScore(score);
+                    }
+                } else {
+                    setTimeout(() => {
+                        tile1.classList.remove('flipped');
+                        tile2.classList.remove('flipped');
+                        tile1.style.backgroundImage = "none";
+                        tile2.style.backgroundImage = "none";
+                        flippedTiles = [];
+                    }, 1000);
+                }
+            }
+
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            function calculateScore(timeTaken) {
+                const maxTime = 120; // Max time in seconds for full score (2 minutes)
+                const score = Math.max(0, Math.min(100, (1 - timeTaken / maxTime) * 100));
+                return score.toFixed(2);
+            }
+
+            function displayScore(score) {
+                scoreElement.textContent = score;
+                scoreContainer.classList.remove('hidden');
+                reportTeaser.textContent = `Based on your performance, you have a memory score of ${score}%. Here's a sneak peek of what you can improve based on expert advice:`;
+
+                // Teaser text from Expert Secrets
+                reportTeaser.textContent += " " + 
+                    "To build your brand, you'll need to connect with your audience, create irresistible offers, and tell your story effectively. This is a sneak peek of the tactics and strategies used by successful entrepreneurs. Want to know more? Enter your email to get the full report.";
+
+                reportContainer.classList.remove('hidden');
+            }
+
+            sendReportBtn.addEventListener('click', function() {
+                const email = userEmail.value;
+                if (email) {
+                    alert(`Full report will be sent to ${email}`);
+                    // Simulate email sending (this would be connected to an actual backend in a real application)
+                } else {
+                    alert("Please enter your email to receive the full report.");
+                }
+            });
+        })();
+    </script>
+</div>
