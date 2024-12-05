@@ -11,34 +11,21 @@
             height: 100vh;
             background-color: #f1f0ee;
             overflow: hidden;
-        }
-
-        /* Game container - ensure it maintains a square shape and scales */
-        #game-container {
-            width: 90%; /* Responsive width */
-            max-width: 600px; /* Maximum width */
-            height: 90%; /* Responsive height */
-            max-height: 600px; /* Maximum height to avoid stretching */
-            padding: 10px;
             box-sizing: border-box;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         /* Game board container */
         .game-board {
             display: grid;
             grid-gap: 10px;
-            grid-template-columns: repeat(4, 1fr); /* 4 columns */
-            grid-template-rows: repeat(3, 1fr); /* 3 rows */
-            width: 100%; /* Fill container width */
-            height: 100%; /* Fill container height */
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 90%;
+            max-height: 90%;
+            width: 500px;
+            height: 500px;
             background-color: #28261e;
             padding: 10px;
             border-radius: 8px;
-            box-sizing: border-box;
-            overflow: hidden;
         }
 
         .tile {
@@ -63,7 +50,7 @@
         }
 
         .tile.matched {
-            background-color: #7c7057;
+            background-color: rgba(76, 175, 80, 0.7); /* Green translucent when matched */
             pointer-events: none;
         }
 
@@ -71,86 +58,121 @@
             display: none;
         }
 
-        /* Report and Email Form */
-        .report-container {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .email-form {
-            display: flex;
+        /* Result container - Fullscreen card */
+        #result-container {
+            display: none; /* Initially hidden */
             justify-content: center;
-            margin-top: 10px;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            background-color: #fff;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            opacity: 0; /* Ensure it's invisible initially */
+            transition: opacity 1s ease-in-out; /* Smooth transition */
         }
 
-        .email-form input {
-            padding: 10px;
+        #result-container.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        #result-container h2 {
+            font-size: 28px;
+            color: #28261e;
+        }
+
+        #result-container p {
             font-size: 16px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            margin-right: 10px;
+            color: #555;
+            margin: 15px 0;
         }
 
-        .email-form button {
+        .result-button {
             padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #28261e;
+            background-color: #28a745;
             color: white;
+            font-size: 16px;
             border: none;
             border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: background-color 0.3s;
         }
 
-        /* Ensure everything scales properly on smaller screens */
+        .result-button:hover {
+            background-color: #218838;
+        }
+
+        /* Score Animation */
+        #score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #28a745;
+            opacity: 0; /* Hidden initially */
+            transform: scale(0); /* Initially small */
+            transition: opacity 1s, transform 1s; /* Smooth transition */
+        }
+
+        /* Make the game board smaller on mobile devices */
         @media (max-width: 768px) {
-            #game-container {
-                max-width: 80%; /* Reduce max width for tablets */
-                max-height: 80vh; /* Scale down height */
+            .game-board {
+                width: 90%;
+                height: auto;
+                max-height: 90%;
+                grid-template-columns: repeat(4, 1fr);
             }
         }
 
         @media (max-width: 480px) {
-            #game-container {
-                max-width: 90%; /* Ensure it doesn't stretch off-screen on very small devices */
-                max-height: 70vh;
+            .game-board {
+                width: 90%;
+                height: auto;
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            #result-container h2 {
+                font-size: 24px;
+            }
+
+            #result-container p {
+                font-size: 14px;
             }
         }
-
     </style>
 
     <div class="game-board" id="game-board"></div>
 
-    <div id="score-container" class="hidden">
-        <h2>Your Memory Score is: <span id="score"></span> / 100</h2>
-        <div id="report-container" class="report-container hidden">
-            <p id="report-teaser"></p>
-            <div class="email-form">
-                <input type="email" id="user-email" placeholder="Enter your email for full report" />
-                <button id="send-report-btn">Get Full Report</button>
-            </div>
-        </div>
+    <!-- Result screen -->
+    <div id="result-container">
+        <h2>Your Memory Score: <span id="score">0</span></h2>
+        <p id="result-message"></p>
+        <button class="result-button" id="read-more-btn">What does this mean?</button>
     </div>
 
     <script>
-        // Memory Game Setup
+        // Game Setup and Result Display
         (function() {
             const gameBoard = document.getElementById('game-board');
-            const scoreContainer = document.getElementById('score-container');
+            const resultContainer = document.getElementById('result-container');
             const scoreElement = document.getElementById('score');
-            const reportContainer = document.getElementById('report-container');
-            const reportTeaser = document.getElementById('report-teaser');
-            const sendReportBtn = document.getElementById('send-report-btn');
-            const userEmail = document.getElementById('user-email');
-            
+            const resultMessage = document.getElementById('result-message');
+            const readMoreBtn = document.getElementById('read-more-btn');
+
             const animalImages = [
-                "https://files.worldwildlife.org/wwfcmsprod/images/Tiger_resting_Bandhavgarh_National_Park_India/hero_small/6aofsvaglm_Medium_WW226365.jpg", // Tiger
-                "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsX29mZmljZV8yX3Bob3RvX29mX2FfbGlvbl9pc29sYXRlZF9vbl9jb2xvcl9iYWNrZ3JvdW5kXzJhNzgwMjM1LWRlYTgtNDMyOS04OWVjLTY3ZWMwNjcxZDhiMV8xLmpwZw.jpg", // Lion
-                "https://cdn.britannica.com/02/152302-050-1A984FCB/African-savanna-elephant.jpg", // Elephant
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZtlc0dpgyaC-_uvD-EH3mZ1Q5Ai95V3SJcw&s", // Giraffe
-                "https://cdn.britannica.com/77/81277-050-2A6A35B2/Adelie-penguin.jpg", // Penguin
-                "https://t3.ftcdn.net/jpg/00/16/81/88/360_F_16818804_3zqaNN9Bg4Pojl8iiiRiDvP67P6OoYYi.jpg", // Bear
-                "https://s3.us-east-1.amazonaws.com/contents.newzenler.com/45939/library/65a28cd887a30_1705151704_base-logo-transparent-background.png", // Zebra
-                "https://www.wwf.org.uk/sites/default/files/styles/max_650x650/public/2022-05/_WW236934.jpg?itok=JlG-1l9V"  // Koala
+                "https://files.worldwildlife.org/wwfcmsprod/images/Tiger_resting_Bandhavgarh_National_Park_India/hero_small/6aofsvaglm_Medium_WW226365.jpg",
+                "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsX29mZmljZV8yX3Bob3RvX29mX2FfbGlvbl9pc29sYXRlZF9vbl9jb2xvcl9iYWNrZ3JvdW5kXzJhNzgwMjM1LWRlYTgtNDMyOS04OWVjLTY3ZWMwNjcxZDhiMV8xLmpwZw.jpg",
+                "https://cdn.britannica.com/02/152302-050-1A984FCB/African-savanna-elephant.jpg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZtlc0dpgyaC-_uvD-EH3mZ1Q5Ai95V3SJcw&s",
+                "https://cdn.britannica.com/77/81277-050-2A6A35B2/Adelie-penguin.jpg",
+                "https://t3.ftcdn.net/jpg/00/16/81/88/360_F_16818804_3zqaNN9Bg4Pojl8iiiRiDvP67P6OoYYi.jpg",
+                "https://s3.us-east-1.amazonaws.com/contents.newzenler.com/45939/library/65a28cd887a30_1705151704_base-logo-transparent-background.png",
+                "https://www.wwf.org.uk/sites/default/files/styles/max_650x650/public/2022-05/_WW236934.jpg?itok=JlG-1l9V"
             ];
 
             let tiles = [...animalImages, ...animalImages];
@@ -159,13 +181,14 @@
             let matchedTiles = 0;
             let startTime = Date.now();
 
+            // Set up tiles and handle tile flip
             tiles.forEach((value, index) => {
                 const tile = document.createElement('div');
                 tile.classList.add('tile');
                 tile.dataset.index = index;
                 tile.dataset.value = value;
                 tile.style.backgroundImage = "none"; // Images hidden initially
-                tile.textContent = "";
+                tile.textContent = ""; // Ensure no tile is empty
                 tile.addEventListener('click', flipTile);
                 gameBoard.appendChild(tile);
             });
@@ -197,7 +220,7 @@
                         const endTime = Date.now();
                         const timeTaken = (endTime - startTime) / 1000; // Time in seconds
                         const score = calculateScore(timeTaken);
-                        displayScore(score);
+                        displayScore(score, timeTaken);
                     }
                 } else {
                     setTimeout(() => {
@@ -218,34 +241,45 @@
                 return array;
             }
 
-            function calculateScore(timeTaken) {
-                const maxTime = 120; // Max time in seconds for full score (2 minutes)
-                const score = Math.max(0, Math.min(100, (1 - timeTaken / maxTime) * 100));
-                return score.toFixed(2);
+            function calculateScore(time) {
+                let score = 100 - (time / 2); // A basic scale where time directly affects the score
+                return Math.max(Math.round(score), 0); // Ensure score never goes below 0
             }
 
-            function displayScore(score) {
-                scoreElement.textContent = score;
-                scoreContainer.classList.remove('hidden');
-                reportTeaser.textContent = `Based on your performance, you have a memory score of ${score}%. Here's a sneak peek of what you can improve based on expert advice:`;
+            function displayScore(score, timeTaken) {
+                gameBoard.classList.add('hidden');
+                resultContainer.classList.add('visible');  // Make result container visible
+                resultMessage.textContent = `You took ${Math.round(timeTaken)} seconds to complete the game. Your score reflects your memory and mental sharpness!`;
 
-                // Teaser text from Expert Secrets
-                reportTeaser.textContent += " " + 
-                    "To build your brand, you'll need to connect with your audience, create irresistible offers, and tell your story effectively. This is a sneak peek of the tactics and strategies used by successful entrepreneurs. Want to know more? Enter your email to get the full report.";
+                animateScore(score);  // Trigger score animation
 
-                reportContainer.classList.remove('hidden');
-            }
-
-            sendReportBtn.addEventListener('click', function() {
-                const email = userEmail.value;
-                if (email) {
-                    alert(`Full report will be sent to ${email}`);
-                    // Simulate email sending (this would be connected to an actual backend in a real application)
+                let link = "#";
+                if (score <= 50) {
+                    link = "page_for_low_scorers.html";
+                } else if (score <= 70) {
+                    link = "page_for_average_scorers.html";
+                } else if (score <= 90) {
+                    link = "page_for_good_scorers.html";
                 } else {
-                    alert("Please enter your email to receive the full report.");
+                    link = "page_for_excellent_scorers.html";
                 }
-            });
+
+                readMoreBtn.setAttribute('onclick', `window.location.href='${link}'`);
+            }
+
+            function animateScore(finalScore) {
+                let currentScore = 0;
+                scoreElement.style.opacity = 1; // Make score visible
+                scoreElement.style.transform = "scale(1)"; // Ensure it's not scaled down
+                const scoreInterval = setInterval(() => {
+                    if (currentScore < finalScore) {
+                        currentScore++;
+                        scoreElement.textContent = currentScore;
+                    } else {
+                        clearInterval(scoreInterval);
+                    }
+                }, 30);  // Adjust the speed of the animation (lower is faster)
+            }
         })();
     </script>
 </div>
-
