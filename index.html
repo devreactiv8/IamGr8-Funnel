@@ -1,4 +1,9 @@
-<div id="game-container">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory Game</title>
     <style>
         /* Global styles */
         body {
@@ -145,141 +150,146 @@
             }
         }
     </style>
+</head>
 
-    <div class="game-board" id="game-board"></div>
+<body>
+    <div id="game-container">
+        <div class="game-board" id="game-board"></div>
 
-    <!-- Result screen -->
-    <div id="result-container">
-        <h2>Your Memory Score: <span id="score">0</span></h2>
-        <p id="result-message"></p>
-        <button class="result-button" id="read-more-btn">What does this mean?</button>
-    </div>
+        <!-- Result screen -->
+        <div id="result-container">
+            <h2>Your Memory Score: <span id="score">0</span></h2>
+            <p id="result-message"></p>
+            <button class="result-button" id="read-more-btn">What does this mean?</button>
+        </div>
 
-    <script>
-        // Game Setup and Result Display
-        (function() {
-            const gameBoard = document.getElementById('game-board');
-            const resultContainer = document.getElementById('result-container');
-            const scoreElement = document.getElementById('score');
-            const resultMessage = document.getElementById('result-message');
-            const readMoreBtn = document.getElementById('read-more-btn');
+        <script>
+            // Game Setup and Result Display
+            (function() {
+                const gameBoard = document.getElementById('game-board');
+                const resultContainer = document.getElementById('result-container');
+                const scoreElement = document.getElementById('score');
+                const resultMessage = document.getElementById('result-message');
+                const readMoreBtn = document.getElementById('read-more-btn');
 
-            const animalImages = [
-                "https://files.worldwildlife.org/wwfcmsprod/images/Tiger_resting_Bandhavgarh_National_Park_India/hero_small/6aofsvaglm_Medium_WW226365.jpg",
-                "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsX29mZmljZV8yX3Bob3RvX29mX2FfbGlvbl9pc29sYXRlZF9vbl9jb2xvcl9iYWNrZ3JvdW5kXzJhNzgwMjM1LWRlYTgtNDMyOS04OWVjLTY3ZWMwNjcxZDhiMV8xLmpwZw.jpg",
-                "https://cdn.britannica.com/02/152302-050-1A984FCB/African-savanna-elephant.jpg",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZtlc0dpgyaC-_uvD-EH3mZ1Q5Ai95V3SJcw&s",
-                "https://cdn.britannica.com/77/81277-050-2A6A35B2/Adelie-penguin.jpg",
-                "https://t3.ftcdn.net/jpg/00/16/81/88/360_F_16818804_3zqaNN9Bg4Pojl8iiiRiDvP67P6OoYYi.jpg",
-                "https://s3.us-east-1.amazonaws.com/contents.newzenler.com/45939/library/65a28cd887a30_1705151704_base-logo-transparent-background.png",
-                "https://www.wwf.org.uk/sites/default/files/styles/max_650x650/public/2022-05/_WW236934.jpg?itok=JlG-1l9V"
-            ];
+                const animalImages = [
+                    "https://files.worldwildlife.org/wwfcmsprod/images/Tiger_resting_Bandhavgarh_National_Park_India/hero_small/6aofsvaglm_Medium_WW226365.jpg",
+                    "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA4L3Jhd3BpeGVsX29mZmljZV8yX3Bob3RvX29mX2FfbGlvbl9pc29sYXRlZF9vbl9jb2xvcl9iYWNrZ3JvdW5kXzJhNzgwMjM1LWRlYTgtNDMyOS04OWVjLTY3ZWMwNjcxZDhiMV8xLmpwZw.jpg",
+                    "https://cdn.britannica.com/02/152302-050-1A984FCB/African-savanna-elephant.jpg",
+                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZtlc0dpgyaC-_uvD-EH3mZ1Q5Ai95V3SJcw&s",
+                    "https://cdn.britannica.com/77/81277-050-2A6A35B2/Adelie-penguin.jpg",
+                    "https://t3.ftcdn.net/jpg/00/16/81/88/360_F_16818804_3zqaNN9Bg4Pojl8iiiRiDvP67P6OoYYi.jpg",
+                    "https://s3.us-east-1.amazonaws.com/contents.newzenler.com/45939/library/65a28cd887a30_1705151704_base-logo-transparent-background.png",
+                    "https://www.wwf.org.uk/sites/default/files/styles/max_650x650/public/2022-05/_WW236934.jpg?itok=JlG-1l9V"
+                ];
 
-            let tiles = [...animalImages, ...animalImages];
-            tiles = shuffle(tiles);
-            let flippedTiles = [];
-            let matchedTiles = 0;
-            let startTime = Date.now();
+                let tiles = [...animalImages, ...animalImages];
+                tiles = shuffle(tiles);
+                let flippedTiles = [];
+                let matchedTiles = 0;
+                let startTime = Date.now();
 
-            // Set up tiles and handle tile flip
-            tiles.forEach((value, index) => {
-                const tile = document.createElement('div');
-                tile.classList.add('tile');
-                tile.dataset.index = index;
-                tile.dataset.value = value;
-                tile.style.backgroundImage = "none"; // Images hidden initially
-                tile.textContent = ""; // Ensure no tile is empty
-                tile.addEventListener('click', flipTile);
-                gameBoard.appendChild(tile);
-            });
+                // Set up tiles and handle tile flip
+                tiles.forEach((value, index) => {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    tile.dataset.index = index;
+                    tile.dataset.value = value;
+                    tile.style.backgroundImage = "none"; // Images hidden initially
+                    tile.textContent = ""; // Ensure no tile is empty
+                    tile.addEventListener('click', flipTile);
+                    gameBoard.appendChild(tile);
+                });
 
-            function flipTile(event) {
-                const tile = event.target;
-                if (flippedTiles.length === 2 || tile.classList.contains('flipped') || tile.classList.contains('matched')) {
-                    return;
-                }
-
-                tile.classList.add('flipped');
-                tile.style.backgroundImage = `url(${tile.dataset.value})`;
-                flippedTiles.push(tile);
-
-                if (flippedTiles.length === 2) {
-                    checkMatch();
-                }
-            }
-
-            function checkMatch() {
-                const [tile1, tile2] = flippedTiles;
-                if (tile1.dataset.value === tile2.dataset.value) {
-                    tile1.classList.add('matched');
-                    tile2.classList.add('matched');
-                    matchedTiles += 2;
-                    flippedTiles = [];
-
-                    if (matchedTiles === tiles.length) {
-                        const endTime = Date.now();
-                        const timeTaken = (endTime - startTime) / 1000; // Time in seconds
-                        const score = calculateScore(timeTaken);
-                        displayScore(score, timeTaken);
+                function flipTile(event) {
+                    const tile = event.target;
+                    if (flippedTiles.length === 2 || tile.classList.contains('flipped') || tile.classList.contains('matched')) {
+                        return;
                     }
-                } else {
-                    setTimeout(() => {
-                        tile1.classList.remove('flipped');
-                        tile2.classList.remove('flipped');
-                        tile1.style.backgroundImage = "none";
-                        tile2.style.backgroundImage = "none";
+
+                    tile.classList.add('flipped');
+                    tile.style.backgroundImage = `url(${tile.dataset.value})`;
+                    flippedTiles.push(tile);
+
+                    if (flippedTiles.length === 2) {
+                        checkMatch();
+                    }
+                }
+
+                function checkMatch() {
+                    const [tile1, tile2] = flippedTiles;
+                    if (tile1.dataset.value === tile2.dataset.value) {
+                        tile1.classList.add('matched');
+                        tile2.classList.add('matched');
+                        matchedTiles += 2;
                         flippedTiles = [];
-                    }, 1000);
-                }
-            }
 
-            function shuffle(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-                return array;
-            }
-
-            function calculateScore(time) {
-                let score = 100 - (time / 2); // A basic scale where time directly affects the score
-                return Math.max(Math.round(score), 0); // Ensure score never goes below 0
-            }
-
-            function displayScore(score, timeTaken) {
-                gameBoard.classList.add('hidden');
-                resultContainer.classList.add('visible');  // Make result container visible
-                resultMessage.textContent = `You took ${Math.round(timeTaken)} seconds to complete the game. Your score reflects your memory and mental sharpness!`;
-
-                animateScore(score);  // Trigger score animation
-
-                let link = "#";
-                if (score <= 50) {
-                    link = "page_for_low_scorers.html";
-                } else if (score <= 70) {
-                    link = "page_for_average_scorers.html";
-                } else if (score <= 90) {
-                    link = "page_for_good_scorers.html";
-                } else {
-                    link = "page_for_excellent_scorers.html";
-                }
-
-                readMoreBtn.setAttribute('onclick', `window.location.href='${link}'`);
-            }
-
-            function animateScore(finalScore) {
-                let currentScore = 0;
-                scoreElement.style.opacity = 1; // Make score visible
-                scoreElement.style.transform = "scale(1)"; // Ensure it's not scaled down
-                const scoreInterval = setInterval(() => {
-                    if (currentScore < finalScore) {
-                        currentScore++;
-                        scoreElement.textContent = currentScore;
+                        if (matchedTiles === tiles.length) {
+                            const endTime = Date.now();
+                            const timeTaken = (endTime - startTime) / 1000; // Time in seconds
+                            const score = calculateScore(timeTaken);
+                            displayScore(score, timeTaken);
+                        }
                     } else {
-                        clearInterval(scoreInterval);
+                        setTimeout(() => {
+                            tile1.classList.remove('flipped');
+                            tile2.classList.remove('flipped');
+                            tile1.style.backgroundImage = "none";
+                            tile2.style.backgroundImage = "none";
+                            flippedTiles = [];
+                        }, 1000);
                     }
-                }, 30);  // Adjust the speed of the animation (lower is faster)
-            }
-        })();
-    </script>
-</div>
+                }
+
+                function shuffle(array) {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                    }
+                    return array;
+                }
+
+                function calculateScore(time) {
+                    let score = 100 - (time / 2); // A basic scale where time directly affects the score
+                    return Math.max(Math.round(score), 0); // Ensure score never goes below 0
+                }
+
+                function displayScore(score, timeTaken) {
+                    gameBoard.classList.add('hidden');
+                    resultContainer.classList.add('visible');  // Make result container visible
+                    resultMessage.textContent = `You took ${Math.round(timeTaken)} seconds to complete the game. Your score reflects your memory and mental sharpness!`;
+
+                    animateScore(score);  // Trigger score animation
+
+                    let link = "#";
+                    if (score <= 50) {
+                        link = "page_for_low_scorers.html";
+                    } else if (score <= 70) {
+                        link = "page_for_average_scorers.html";
+                    } else if (score <= 90) {
+                        link = "page_for_good_scorers.html";
+                    } else {
+                        link = "page_for_excellent_scorers.html";
+                    }
+
+                    readMoreBtn.setAttribute('onclick', `window.location.href='${link}'`);
+                }
+
+                function animateScore(finalScore) {
+                    let currentScore = 0;
+                    scoreElement.style.opacity = 1; // Make score visible
+                    scoreElement.style.transform = "scale(1)"; // Ensure it's not scaled down
+                    const scoreInterval = setInterval(() => {
+                        if (currentScore < finalScore) {
+                            currentScore++;
+                            scoreElement.textContent = currentScore;
+                        } else {
+                            clearInterval(scoreInterval);
+                        }
+                    }, 30);  // Adjust the speed of the animation (lower is faster)
+                }
+            })();
+        </script>
+    </div>
+</body>
+</html>
