@@ -31,6 +31,9 @@
             background-color: #28261e;
             padding: 10px;
             border-radius: 8px;
+            /* Add a minimum size */
+            min-width: 300px;
+            min-height: 300px;
         }
 
         .tile {
@@ -125,20 +128,23 @@
         }
 
         /* Make the game board smaller on mobile devices */
+        @media (max-width: 1024px) {
+            .game-board {
+                width: 90%;
+                height: auto;
+                max-height: 80vh;
+                grid-template-columns: repeat(4, 1fr);
+                min-width: 280px;
+            }
+        }
+
         @media (max-width: 768px) {
             .game-board {
                 width: 90%;
                 height: auto;
-                max-height: 90%;
+                max-height: 80vh;
                 grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .game-board {
-                width: 90%;
-                height: auto;
-                grid-template-columns: repeat(4, 1fr);
+                min-width: 260px;
             }
 
             #result-container h2 {
@@ -148,9 +154,40 @@
             #result-container p {
                 font-size: 14px;
             }
+        }
 
-            .result-button {
-                font-size: 14px;
+        @media (max-width: 480px) {
+            .game-board {
+                width: 90%;
+                height: auto;
+                max-height: 70vh;
+                grid-template-columns: repeat(4, 1fr);
+                min-width: 240px;
+            }
+
+            #result-container h2 {
+                font-size: 20px;
+            }
+
+            #result-container p {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .game-board {
+                width: 90%;
+                height: auto;
+                grid-template-columns: repeat(3, 1fr); /* Reduce columns for small screens */
+                min-width: 220px;
+            }
+
+            #result-container h2 {
+                font-size: 18px;
+            }
+
+            #result-container p {
+                font-size: 10px;
             }
         }
     </style>
@@ -205,46 +242,7 @@
                     gameBoard.appendChild(tile);
                 });
 
-                function flipTile(event) {
-                    const tile = event.target;
-                    if (flippedTiles.length === 2 || tile.classList.contains('flipped') || tile.classList.contains('matched')) {
-                        return;
-                    }
-
-                    tile.classList.add('flipped');
-                    tile.style.backgroundImage = `url(${tile.dataset.value})`;
-                    flippedTiles.push(tile);
-
-                    if (flippedTiles.length === 2) {
-                        checkMatch();
-                    }
-                }
-
-                function checkMatch() {
-                    const [tile1, tile2] = flippedTiles;
-                    if (tile1.dataset.value === tile2.dataset.value) {
-                        tile1.classList.add('matched');
-                        tile2.classList.add('matched');
-                        matchedTiles += 2;
-                        flippedTiles = [];
-
-                        if (matchedTiles === tiles.length) {
-                            const endTime = Date.now();
-                            const timeTaken = (endTime - startTime) / 1000; // Time in seconds
-                            const score = calculateScore(timeTaken);
-                            displayScore(score, timeTaken);
-                        }
-                    } else {
-                        setTimeout(() => {
-                            tile1.classList.remove('flipped');
-                            tile2.classList.remove('flipped');
-                            tile1.style.backgroundImage = "none";
-                            tile2.style.backgroundImage = "none";
-                            flippedTiles = [];
-                        }, 1000);
-                    }
-                }
-
+                // Shuffle function to randomize the tiles
                 function shuffle(array) {
                     for (let i = array.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
@@ -253,45 +251,57 @@
                     return array;
                 }
 
-                function calculateScore(time) {
-                    let score = 100 - (time / 2); // A basic scale where time directly affects the score
-                    return Math.max(Math.round(score), 0); // Ensure score never goes below 0
-                }
+                // Tile flip logic
+                function flipTile(e) {
+                    const tile = e.target;
 
-                function displayScore(score, timeTaken) {
-                    gameBoard.classList.add('hidden');
-                    resultContainer.classList.add('visible');  // Make result container visible
-                    resultMessage.textContent = `You took ${Math.round(timeTaken)} seconds to complete the game. Your score reflects your memory and mental sharpness!`;
+                    if (flippedTiles.length < 2 && !tile.classList.contains('flipped') && !tile.classList.contains('matched')) {
+                        tile.style.backgroundImage = `url(${tile.dataset.value})`;
+                        tile.textContent = ""; // Remove any text inside tile
+                        tile.classList.add('flipped');
+                        flippedTiles.push(tile);
 
-                    animateScore(score);  // Trigger score animation
-
-                    let link = "#";
-                    if (score <= 50) {
-                        link = "page_for_low_scorers.html";
-                    } else if (score <= 70) {
-                        link = "page_for_average_scorers.html";
-                    } else if (score <= 90) {
-                        link = "page_for_good_scorers.html";
-                    } else {
-                        link = "page_for_excellent_scorers.html";
-                    }
-
-                    readMoreBtn.setAttribute('onclick', `window.location.href='${link}'`);
-                }
-
-                function animateScore(finalScore) {
-                    let currentScore = 0;
-                    scoreElement.style.opacity = 1; // Make score visible
-                    scoreElement.style.transform = "scale(1)"; // Ensure it's not scaled down
-                    const scoreInterval = setInterval(() => {
-                        if (currentScore < finalScore) {
-                            currentScore++;
-                            scoreElement.textContent = currentScore;
-                        } else {
-                            clearInterval(scoreInterval);
+                        if (flippedTiles.length === 2) {
+                            checkMatch();
                         }
-                    }, 30);  // Adjust the speed of the animation (lower is faster)
+                    }
                 }
+
+                // Check if two flipped tiles match
+                function checkMatch() {
+                    const [firstTile, secondTile] = flippedTiles;
+                    if (firstTile.dataset.value === secondTile.dataset.value) {
+                        firstTile.classList.add('matched');
+                        secondTile.classList.add('matched');
+                        matchedTiles++;
+                        flippedTiles = [];
+                        if (matchedTiles === animalImages.length) {
+                            showResult();
+                        }
+                    } else {
+                        setTimeout(() => {
+                            firstTile.classList.remove('flipped');
+                            secondTile.classList.remove('flipped');
+                            firstTile.style.backgroundImage = "none";
+                            secondTile.style.backgroundImage = "none";
+                            flippedTiles = [];
+                        }, 1000);
+                    }
+                }
+
+                // Show result after game completion
+                function showResult() {
+                    const endTime = Date.now();
+                    const timeTaken = Math.floor((endTime - startTime) / 1000);
+                    resultMessage.textContent = `You completed the game in ${timeTaken} seconds!`;
+                    scoreElement.textContent = timeTaken;
+                    resultContainer.classList.add('visible');
+                }
+
+                // Read more button
+                readMoreBtn.addEventListener('click', () => {
+                    alert("You just completed a fun memory game! This game improves your memory and concentration.");
+                });
             })();
         </script>
     </div>
