@@ -31,9 +31,6 @@
             background-color: #28261e;
             padding: 10px;
             border-radius: 8px;
-            /* Add a minimum size */
-            min-width: 300px;
-            min-height: 300px;
         }
 
         .tile {
@@ -128,23 +125,20 @@
         }
 
         /* Make the game board smaller on mobile devices */
-        @media (max-width: 1024px) {
-            .game-board {
-                width: 90%;
-                height: auto;
-                max-height: 80vh;
-                grid-template-columns: repeat(4, 1fr);
-                min-width: 280px;
-            }
-        }
-
         @media (max-width: 768px) {
             .game-board {
                 width: 90%;
                 height: auto;
-                max-height: 80vh;
+                max-height: 90%;
                 grid-template-columns: repeat(4, 1fr);
-                min-width: 260px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-board {
+                width: 90%;
+                height: auto;
+                grid-template-columns: repeat(4, 1fr);
             }
 
             #result-container h2 {
@@ -153,41 +147,6 @@
 
             #result-container p {
                 font-size: 14px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .game-board {
-                width: 90%;
-                height: auto;
-                max-height: 70vh;
-                grid-template-columns: repeat(4, 1fr);
-                min-width: 240px;
-            }
-
-            #result-container h2 {
-                font-size: 20px;
-            }
-
-            #result-container p {
-                font-size: 12px;
-            }
-        }
-
-        @media (max-width: 320px) {
-            .game-board {
-                width: 90%;
-                height: auto;
-                grid-template-columns: repeat(3, 1fr); /* Reduce columns for small screens */
-                min-width: 220px;
-            }
-
-            #result-container h2 {
-                font-size: 18px;
-            }
-
-            #result-container p {
-                font-size: 10px;
             }
         }
     </style>
@@ -242,66 +201,67 @@
                     gameBoard.appendChild(tile);
                 });
 
-                // Shuffle function to randomize the tiles
-                function shuffle(array) {
-                    for (let i = array.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [array[i], array[j]] = [array[j], array[i]];
+                function flipTile(event) {
+                    const tile = event.target;
+                    if (flippedTiles.length === 2 || tile.classList.contains('flipped') || tile.classList.contains('matched')) {
+                        return;
                     }
-                    return array;
-                }
 
-                // Tile flip logic
-                function flipTile(e) {
-                    const tile = e.target;
+                    tile.classList.add('flipped');
+                    tile.style.backgroundImage = `url(${tile.dataset.value})`;
+                    flippedTiles.push(tile);
 
-                    if (flippedTiles.length < 2 && !tile.classList.contains('flipped') && !tile.classList.contains('matched')) {
-                        tile.style.backgroundImage = `url(${tile.dataset.value})`;
-                        tile.textContent = ""; // Remove any text inside tile
-                        tile.classList.add('flipped');
-                        flippedTiles.push(tile);
-
-                        if (flippedTiles.length === 2) {
-                            checkMatch();
-                        }
+                    if (flippedTiles.length === 2) {
+                        checkMatch();
                     }
                 }
 
-                // Check if two flipped tiles match
                 function checkMatch() {
-                    const [firstTile, secondTile] = flippedTiles;
-                    if (firstTile.dataset.value === secondTile.dataset.value) {
-                        firstTile.classList.add('matched');
-                        secondTile.classList.add('matched');
-                        matchedTiles++;
+                    const [tile1, tile2] = flippedTiles;
+                    if (tile1.dataset.value === tile2.dataset.value) {
+                        tile1.classList.add('matched');
+                        tile2.classList.add('matched');
+                        matchedTiles += 2;
                         flippedTiles = [];
-                        if (matchedTiles === animalImages.length) {
-                            showResult();
+
+                        if (matchedTiles === tiles.length) {
+                            const endTime = Date.now();
+                            const timeTaken = (endTime - startTime) / 1000; // Time in seconds
+                            const score = calculateScore(timeTaken);
+                            displayScore(score, timeTaken);
                         }
                     } else {
                         setTimeout(() => {
-                            firstTile.classList.remove('flipped');
-                            secondTile.classList.remove('flipped');
-                            firstTile.style.backgroundImage = "none";
-                            secondTile.style.backgroundImage = "none";
+                            tile1.classList.remove('flipped');
+                            tile2.classList.remove('flipped');
+                            tile1.style.backgroundImage = "none";
+                            tile2.style.backgroundImage = "none";
                             flippedTiles = [];
                         }, 1000);
                     }
                 }
 
-                // Show result after game completion
-                function showResult() {
-                    const endTime = Date.now();
-                    const timeTaken = Math.floor((endTime - startTime) / 1000);
-                    resultMessage.textContent = `You completed the game in ${timeTaken} seconds!`;
-                    scoreElement.textContent = timeTaken;
-                    resultContainer.classList.add('visible');
+                function shuffle(array) {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]]; // Swap
+                    }
+                    return array;
                 }
 
-                // Read more button
-                readMoreBtn.addEventListener('click', () => {
-                    alert("You just completed a fun memory game! This game improves your memory and concentration.");
-                });
+                function calculateScore(timeTaken) {
+                    return Math.max(100 - Math.floor(timeTaken), 0);
+                }
+
+                function displayScore(score, timeTaken) {
+                    scoreElement.textContent = score;
+                    resultMessage.textContent = `You completed the game in ${Math.floor(timeTaken)} seconds.`;
+                    setTimeout(() => {
+                        resultContainer.classList.add('visible');
+                        scoreElement.style.transform = "scale(1)";
+                        scoreElement.style.opacity = "1"; // Show score with animation
+                    }, 500); // Delay for smooth transition
+                }
             })();
         </script>
     </div>
