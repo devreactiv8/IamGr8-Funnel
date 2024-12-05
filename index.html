@@ -13,15 +13,14 @@
             overflow: hidden;
         }
 
-        /* Ensure the game scales responsively but keeps 3 rows */
+        /* Game container - ensure it maintains a square shape and scales */
         #game-container {
-            width: 100%;
-            height: 100%;
-            max-width: 600px; /* Maximum width for the game */
-            max-height: 90vh; /* Maximum height to avoid overflowing the viewport */
+            width: 90%; /* Responsive width */
+            max-width: 600px; /* Maximum width */
+            height: 90%; /* Responsive height */
+            max-height: 600px; /* Maximum height to avoid stretching */
             padding: 10px;
             box-sizing: border-box;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -31,17 +30,15 @@
         .game-board {
             display: grid;
             grid-gap: 10px;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(3, 1fr); /* Ensure we always have 3 rows */
-            width: 100%;
-            height: 100%;
+            grid-template-columns: repeat(4, 1fr); /* 4 columns */
+            grid-template-rows: repeat(3, 1fr); /* 3 rows */
+            width: 100%; /* Fill container width */
+            height: 100%; /* Fill container height */
             background-color: #28261e;
             padding: 10px;
             border-radius: 8px;
             box-sizing: border-box;
             overflow: hidden;
-            max-width: 100%;
-            max-height: 100%;
         }
 
         .tile {
@@ -59,8 +56,6 @@
             background-size: cover;
             background-position: center;
             position: relative;
-            width: 100%; /* Ensures tiles are responsive */
-            height: 100%; /* Ensures tiles are responsive */
         }
 
         .tile.flipped {
@@ -106,34 +101,22 @@
             border-radius: 4px;
         }
 
-        /* Make sure everything scales properly on smaller screens */
+        /* Ensure everything scales properly on smaller screens */
         @media (max-width: 768px) {
             #game-container {
-                max-width: 500px; /* Reduce max width for tablets */
-                max-height: 70vh; /* Scale down height */
+                max-width: 80%; /* Reduce max width for tablets */
+                max-height: 80vh; /* Scale down height */
             }
         }
 
         @media (max-width: 480px) {
             #game-container {
                 max-width: 90%; /* Ensure it doesn't stretch off-screen on very small devices */
-                max-height: 60vh;
+                max-height: 70vh;
             }
         }
 
-        /* Ensure iframe fits properly within its container */
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            max-width: 100%;
-            max-height: 100%;
-            box-sizing: border-box;
-        }
     </style>
-
-    <!-- Ensure the game scales properly on mobile with a viewport meta tag -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <div class="game-board" id="game-board"></div>
 
@@ -265,3 +248,4 @@
         })();
     </script>
 </div>
+
